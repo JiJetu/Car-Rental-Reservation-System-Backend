@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import { Schema, model } from "mongoose";
-import { TUser } from "./user.interface";
+import { TUser, UserModel } from "./user.interface";
 import { UserRole } from "./user.constant";
 import config from "../../config";
 
-const userSchema = new Schema<TUser>(
+const userSchema = new Schema<TUser, UserModel>(
   {
     name: {
       type: String,
@@ -53,4 +53,10 @@ userSchema.post("save", function (doc, next) {
   next();
 });
 
-export const User = model<TUser>("User", userSchema);
+userSchema.statics.isUserExists = async function (email: string) {
+  const userExists = await User.findOne({email})
+
+  return userExists;
+};
+
+export const User = model<TUser, UserModel>("User", userSchema);

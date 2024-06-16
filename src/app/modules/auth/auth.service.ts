@@ -1,4 +1,6 @@
+import httpStatus from "http-status";
 import config from "../../config";
+import AppError from "../../errors/AppError";
 import { User } from "../User/user.model";
 import { TUser } from "./../User/user.interface";
 import { TLogIn } from "./auth.interface";
@@ -6,6 +8,12 @@ import { isPasswordMatch } from "./auth.utils";
 import jwt from "jsonwebtoken";
 
 const signUpIntoDB = async (payload: TUser) => {
+  const isUserExists = await User.isUserExists(payload.email);
+
+  if (isUserExists) {
+    throw new AppError(httpStatus.NOT_FOUND, "User is already exists");
+  }
+
   const result = await User.create(payload);
   return result;
 };
