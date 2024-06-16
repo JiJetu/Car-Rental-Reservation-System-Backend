@@ -23,7 +23,7 @@ const logInIntoDB = async (payload: TLogIn) => {
   const user = await User.findOne({ email: payload.email }).select("+password");
 
   if (!user) {
-    throw new Error("user not found");
+    throw new AppError(httpStatus.NOT_FOUND, "user not found");
   }
 
   // checking password is matching or not with plain pass(request pass) and hash pass(DB pass)
@@ -33,7 +33,7 @@ const logInIntoDB = async (payload: TLogIn) => {
   );
 
   if (!matchedPassword) {
-    throw new Error("Invalid password");
+    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid password");
   }
 
   const jwtPayload = {
@@ -54,8 +54,12 @@ const logInIntoDB = async (payload: TLogIn) => {
       expiresIn: config.jwt_refresh_expires_in,
     }
   );
+  console.log(user);
 
-  return user;
+  return {
+    user,
+    accessToken
+  };
 };
 
 export const AuthServices = {
