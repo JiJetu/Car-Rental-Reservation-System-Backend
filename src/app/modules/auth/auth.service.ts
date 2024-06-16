@@ -54,11 +54,10 @@ const logInIntoDB = async (payload: TLogIn) => {
       expiresIn: config.jwt_refresh_expires_in,
     }
   );
-  console.log(user);
 
   return {
     user,
-    accessToken
+    accessToken,
   };
 };
 

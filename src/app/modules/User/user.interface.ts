@@ -3,10 +3,12 @@
 import { Model } from "mongoose";
 import { UserRole } from "./user.constant";
 
+export type TUserRole = keyof typeof UserRole
+
 export type TUser = {
   name: string;
   email: string;
-  role: keyof typeof UserRole;
+  role: TUserRole;
   password: string;
   phone: string;
   address: string;
