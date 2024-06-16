@@ -1,41 +1,69 @@
-import { ErrorRequestHandler, NextFunction, Request, Response } from "express";
-import { ZodError, ZodIssue } from "zod";
-import { TErrorMessage } from "../interface/error";
+import { ErrorRequestHandler } from "express";
+import { ZodError } from "zod";
+import { TErrorMessages } from "../interface/error";
 import config from "../config";
+import handleZodError from "../errors/handleZodError";
+import handleValidationError from "../errors/handleValidationError";
+import handleCastError from "../errors/handleCastError";
+import handleDuplicateError from "../errors/handleDuplicateError";
+import AppError from "../errors/AppError";
 
 const globalErrorhandler: ErrorRequestHandler = (err, req, res, next) => {
   // setting default values
-  let statusCode = err.statusCode || 500;
-  let message = err.message || "Something went wrong!";
-  let errorMessages: TErrorMessage = [
+  let statusCode = 500;
+  let message = "Something went wrong!";
+  let errorMessages: TErrorMessages = [
     {
       path: "",
       message: "Something went wrong",
     },
   ];
 
-  const handleZodError = (err: ZodError) => {
-    const statusCode = 400;
-    const errorMessages: TErrorMessage = err.issues.map((issue: ZodIssue) => {
-      return {
-        path: issue.path[issue.path.length - 1],
-        message: issue.message,
-      };
-    });
-
-    return {
-      statusCode,
-      message: "Validation Error",
-      errorMessages,
-    };
-  };
-
+  // handling zod errors
   if (err instanceof ZodError) {
     const simplifiedError = handleZodError(err);
 
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
     errorMessages = simplifiedError?.errorMessages;
+  } else if (err?.name === "ValidationError") {
+    // handling mongoose validation errors
+    const simplifiedError = handleValidationError(err);
+
+    statusCode = simplifiedError?.statusCode;
+    message = simplifiedError?.message;
+    errorMessages = simplifiedError?.errorMessages;
+  } else if (err?.name === "CastError") {
+    // handling cast errors
+    const simplifiedError = handleCastError(err);
+
+    statusCode = simplifiedError?.statusCode;
+    message = simplifiedError?.message;
+    errorMessages = simplifiedError?.errorMessages;
+  } else if (err?.code === 11000) {
+    // handling duplicate errors
+    const simplifiedError = handleDuplicateError(err);
+
+    statusCode = simplifiedError?.statusCode;
+    message = simplifiedError?.message;
+    errorMessages = simplifiedError?.errorMessages;
+  } else if (err instanceof AppError) {
+    statusCode = err?.statusCode;
+    message = err?.message;
+    errorMessages = [
+      {
+        path: "",
+        message: err?.message,
+      },
+    ];
+  } else if (err instanceof Error) {
+    message = err?.message;
+    errorMessages = [
+      {
+        path: "",
+        message: err?.message,
+      },
+    ];
   }
 
   return res.status(statusCode).json({
