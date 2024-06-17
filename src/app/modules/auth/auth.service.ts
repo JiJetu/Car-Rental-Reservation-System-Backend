@@ -20,16 +20,20 @@ const signUpIntoDB = async (payload: TUser) => {
 
 const logInIntoDB = async (payload: TLogIn) => {
   // finding user is exists or not and getting the password to verify
-  const user = await User.findOne({ email: payload.email }).select("+password");
+  const userExists = await User.findOne({ email: payload.email }).select(
+    "+password"
+  );
 
-  if (!user) {
+  console.log(userExists?.password);
+
+  if (!userExists) {
     throw new AppError(httpStatus.NOT_FOUND, "user not found");
   }
 
   // checking password is matching or not with plain pass(request pass) and hash pass(DB pass)
   const matchedPassword = await isPasswordMatch(
     payload.password,
-    user?.password
+    userExists?.password
   );
 
   if (!matchedPassword) {
@@ -37,8 +41,8 @@ const logInIntoDB = async (payload: TLogIn) => {
   }
 
   const jwtPayload = {
-    email: user.email,
-    role: user.role,
+    email: userExists.email,
+    role: userExists.role,
   };
 
   // creating access token
@@ -55,8 +59,11 @@ const logInIntoDB = async (payload: TLogIn) => {
     }
   );
 
+  const {password, ...remainingUserData} = userExists.toObject()
+
+
   return {
-    user,
+    user: remainingUserData,
     accessToken,
   };
 };

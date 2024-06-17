@@ -6,11 +6,13 @@ import { AuthServices } from "./auth.service";
 const registerUser = catchAsync(async (req, res) => {
   const result = await AuthServices.signUpIntoDB(req.body);
 
+  const {password, ...remainingUserData} = result.toObject()
+
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
     message: "User logged in successfully",
-    data: result,
+    data: remainingUserData,
   });
 });
 
@@ -22,7 +24,7 @@ const loginUser = catchAsync(async (req, res) => {
     success: true,
     message: "User logged in successfully",
     data: result.user,
-    token: `${result?.accessToken}`
+    token: `${result?.accessToken}`,
   });
 });
 

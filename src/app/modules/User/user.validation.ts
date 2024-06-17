@@ -8,7 +8,7 @@ export const createUserValidationSchema = z.object({
     role: z.nativeEnum(UserRole),
     password: z
       .string()
-      .max(20, { message: "Password can not be more than 20 characters" }),
+      .max(20, { message: "Password can not be more than 20 characters" }).optional(),
     phone: z.string(),
     address: z.string(),
   }),

@@ -20,10 +20,11 @@ router.get("/:carId", CarControllers.getSingleCar);
 
 router.put(
   "/:carId",
+  auth(UserRole.admin),
   validateRequest(CarValidations.updateCarValidationSchema),
   CarControllers.updateCar
 );
 
-router.delete("/:carId", CarControllers.deleteCar);
+router.delete("/:carId", auth(UserRole.admin), CarControllers.deleteCar);
 
 export const CarRoutes = router;
