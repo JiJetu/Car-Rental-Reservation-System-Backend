@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { z } from "zod";
 
 const createBookingSchema = z.object({
@@ -7,7 +6,7 @@ const createBookingSchema = z.object({
     date: z.string({
       message:
         'Invalid date format, expected "YYYY-MM-DD" date format e.g:"2020-01-01"',
-    }).date(),
+    }),
     startTime: z.string().refine(
       (time) => {
         const regex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;

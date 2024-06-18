@@ -5,6 +5,8 @@ import { Booking } from "./booking.model";
 import { Car } from "../Car/car.model";
 import { JwtPayload } from "jsonwebtoken";
 import { User } from "../User/user.model";
+import { CarStatus } from "../Car/car.constant";
+
 
 const createBookingIntoDB = async (
   carId: string,
@@ -12,7 +14,11 @@ const createBookingIntoDB = async (
   user: JwtPayload
 ) => {
   // check car is exists
-  const carExists = await Car.findById(carId);
+  const carExists = await Car.findByIdAndUpdate(
+    carId,
+    { status: CarStatus.unavailable },
+    { new: true }
+  );
   if (!carExists) {
     throw new AppError(httpStatus.NOT_FOUND, "Car is not found!!");
   }
@@ -26,8 +32,6 @@ const createBookingIntoDB = async (
   payload.car = carExists._id;
   payload.user = userExists._id;
 
-  console.log(payload.date);
-
   const result = (
     await (await Booking.create(payload)).populate("user")
   ).populate("car");
@@ -35,8 +39,16 @@ const createBookingIntoDB = async (
   return result;
 };
 
-const getAllBookingFromDB = async () => {
-  const result = await Booking.find();
+const getAllBookingFromDB = async (query: Record<string, unknown>) => {
+  const { carId, date } = query;
+  const queryObj: any = {};
+      if (carId) {
+        queryObj.car = carId;
+      }
+      if (date) {
+        queryObj.date = date
+      }
+  const result = await Booking.find(queryObj).populate("user").populate("car");
 
   return result;
 };
@@ -46,11 +58,8 @@ const userSingleBookingFromDB = async (user: JwtPayload) => {
   if (!userExists) {
     throw new AppError(httpStatus.NOT_FOUND, "User is not found!!");
   }
-  
-  
 
-
-  const result = await Booking.find({user: userExists._id});
+  const result = await Booking.find({ user: userExists._id });
 
   return result;
 };

@@ -7,6 +7,7 @@ import { TBooking } from "../booking/booking.interface";
 import { Booking } from "../booking/booking.model";
 import { User } from "../User/user.model";
 import mongoose from "mongoose";
+import { CarStatus } from "./car.constant";
 
 const createCarIntoDB = async (payload: TCar) => {
   const result = await Car.create(payload);
@@ -40,25 +41,59 @@ const updateCarIntoDB = async (id: string, payload: Partial<TCar>) => {
   return result;
 };
 
-const returnCardIntoDB = async (user: JwtPayload, payload:TReturnCar) => {
-  const userExists = await User.findOne({email: user.email});
+const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
+  const userExists = await User.findOne({ email: user.email });
 
   if (!userExists) {
     throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized access");
   }
 
-  const session = await mongoose.startSession()
+  const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
-    
-    const result = await Booking.findByIdAndUpdate(payload?.bookingId, {endTime: payload.endTime}, {
-      new: true,
-    });
-  
-    return result;
+
+    const booking = await Booking.findById(payload?.bookingId).populate('user').populate("car");
+
+    if (!booking) {
+      throw new AppError(httpStatus.NOT_FOUND, "Booking not found");
+    }
+
+    const endTime = payload.endTime;
+    booking.endTime = endTime;
+
+    const [startHour, startMinute] = booking.startTime.split(":").map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+
+    const startTimeInHours = startHour + startMinute / 60;
+    const endTimeInHours = endHour + endMinute / 60;
+
+    if (startTimeInHours > endTimeInHours) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "startTime is gater then end time"
+      );
+    }
+    const duration = endTimeInHours - startTimeInHours;
+
+    const car = await Car.findByIdAndUpdate(booking?.car, {status: CarStatus.available}, {new:true, session});
+
+    if (!car) {
+      throw new AppError(httpStatus.NOT_FOUND, "Car not found");
+    }
+
+    booking.totalCost = duration * car.pricePerHour;
+
+    await booking.save({ session });
+
+
+    await session.commitTransaction();
+    await session.endSession();
+
+    return booking;
   } catch (error) {
-    
+    await session.abortTransaction()
+    await session.endSession()
   }
 };
 
