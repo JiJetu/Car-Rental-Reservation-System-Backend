@@ -7,7 +7,6 @@ import { JwtPayload } from "jsonwebtoken";
 import { User } from "../User/user.model";
 import { CarStatus } from "../Car/car.constant";
 
-
 const createBookingIntoDB = async (
   carId: string,
   payload: Partial<TBooking>,
@@ -42,12 +41,12 @@ const createBookingIntoDB = async (
 const getAllBookingFromDB = async (query: Record<string, unknown>) => {
   const { carId, date } = query;
   const queryObj: any = {};
-      if (carId) {
-        queryObj.car = carId;
-      }
-      if (date) {
-        queryObj.date = date
-      }
+  if (carId) {
+    queryObj.car = carId;
+  }
+  if (date) {
+    queryObj.date = date;
+  }
   const result = await Booking.find(queryObj).populate("user").populate("car");
 
   return result;
@@ -59,7 +58,9 @@ const userSingleBookingFromDB = async (user: JwtPayload) => {
     throw new AppError(httpStatus.NOT_FOUND, "User is not found!!");
   }
 
-  const result = await Booking.find({ user: userExists._id });
+  const result = await Booking.find({ user: userExists._id })
+    .populate("user")
+    .populate("car");
 
   return result;
 };

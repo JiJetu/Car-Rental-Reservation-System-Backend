@@ -3,7 +3,6 @@ import AppError from "../../errors/AppError";
 import { TCar, TReturnCar } from "./car.interface";
 import { Car } from "./car.model";
 import { JwtPayload } from "jsonwebtoken";
-import { TBooking } from "../booking/booking.interface";
 import { Booking } from "../booking/booking.model";
 import { User } from "../User/user.model";
 import mongoose from "mongoose";

@@ -10,9 +10,9 @@ export type TCar = {
   features: string[];
   pricePerHour: number;
   isDeleted: boolean;
-}
+};
 
 export type TReturnCar = {
-  bookingId: Types.ObjectId,
-  endTime: string
-}
+  bookingId: Types.ObjectId;
+  endTime: string;
+};

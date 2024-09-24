@@ -1,4 +1,3 @@
-import { CarRoutes } from "./../Car/car.route";
 import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";

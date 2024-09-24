@@ -15,13 +15,13 @@ router.post(
   CarControllers.createCar
 );
 
-router.get("/", CarControllers.getAllCar);
+router.get("/", auth(UserRole.admin), CarControllers.getAllCar);
 
 router.get("/:carId", CarControllers.getSingleCar);
 
 router.put(
   "/return",
-  auth('admin'),
+  auth("admin"),
   validateRequest(BookingValidation.returnCarSchema),
   CarControllers.returnCar
 );
@@ -32,8 +32,6 @@ router.put(
   validateRequest(CarValidations.updateCarValidationSchema),
   CarControllers.updateCar
 );
-
-
 
 router.delete("/:carId", auth(UserRole.admin), CarControllers.deleteCar);
 
