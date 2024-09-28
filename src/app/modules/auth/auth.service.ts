@@ -37,7 +37,7 @@ const logInIntoDB = async (payload: TLogIn) => {
   );
 
   if (!matchedPassword) {
-    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid password");
+    throw new AppError(httpStatus.NOT_FOUND, "Invalid password");
   }
 
   const jwtPayload = {
@@ -46,12 +46,20 @@ const logInIntoDB = async (payload: TLogIn) => {
   };
 
   // creating access token
-  const accessToken = createToken(jwtPayload, config.JWT_ACCESS_SECRET as string, config.jwt_access_expires_in as string);
+  const accessToken = createToken(
+    jwtPayload,
+    config.JWT_ACCESS_SECRET as string,
+    config.jwt_access_expires_in as string
+  );
 
   // creating refresh token
-  const refreshToken = createToken(jwtPayload, config.JWT_REFRESH_SECRET as string, config.jwt_refresh_expires_in as string);
+  const refreshToken = createToken(
+    jwtPayload,
+    config.JWT_REFRESH_SECRET as string,
+    config.jwt_refresh_expires_in as string
+  );
 
-  const {password, ...remainingUserData} = userExists.toObject()
+  const { password, ...remainingUserData } = userExists.toObject();
 
   return {
     user: remainingUserData,
@@ -64,17 +72,17 @@ const refreshToken = async (token: string) => {
   // checking if the given token is valid
   const decoded = jwt.verify(
     token,
-    config.JWT_REFRESH_SECRET as string,
+    config.JWT_REFRESH_SECRET as string
   ) as JwtPayload;
   console.log(decoded);
 
   const { email, iat } = decoded;
 
   // checking if the user is exist
-  const user = await User.findOne({email});
+  const user = await User.findOne({ email });
 
   if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
+    throw new AppError(httpStatus.NOT_FOUND, "This user is not found !");
   }
 
   const jwtPayload = {
@@ -85,7 +93,7 @@ const refreshToken = async (token: string) => {
   const accessToken = createToken(
     jwtPayload,
     config.JWT_ACCESS_SECRET as string,
-    config.jwt_access_expires_in as string,
+    config.jwt_access_expires_in as string
   );
 
   return {
@@ -96,5 +104,5 @@ const refreshToken = async (token: string) => {
 export const AuthServices = {
   signUpIntoDB,
   logInIntoDB,
-  refreshToken
+  refreshToken,
 };

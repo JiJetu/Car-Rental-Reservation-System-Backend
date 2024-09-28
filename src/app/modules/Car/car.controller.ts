@@ -15,15 +15,15 @@ const createCar = catchAsync(async (req, res) => {
 });
 
 const getAllCar = catchAsync(async (req, res) => {
-  const result = await CarService.getAllCarFromDB();
-
+  const result = await CarService.getAllCarFromDB(req.query);
 
   if (Object.keys(result).length <= 0) {
     return sendResponse(res, {
       statusCode: httpStatus.NOT_FOUND,
       success: false,
       message: "No Data Found",
-      data: result,
+      meta: result.meta,
+      data: result.result,
     });
   }
 
@@ -31,7 +31,8 @@ const getAllCar = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Cars retrieved successfully",
-    data: result,
+    meta: result.meta,
+    data: result.result,
   });
 });
 
@@ -39,7 +40,7 @@ const getSingleCar = catchAsync(async (req, res) => {
   const { carId } = req.params;
   const result = await CarService.getSingleCarFromDB(carId);
 
-  if ( result === null) {
+  if (result === null) {
     return sendResponse(res, {
       statusCode: httpStatus.NOT_FOUND,
       success: false,
@@ -69,7 +70,7 @@ const updateCar = catchAsync(async (req, res) => {
 });
 
 const returnCar = catchAsync(async (req, res) => {
-  const user = req.user
+  const user = req.user;
 
   const result = await CarService.returnCardIntoDB(user, req.body);
 
@@ -99,5 +100,5 @@ export const CarControllers = {
   getSingleCar,
   updateCar,
   deleteCar,
-  returnCar
+  returnCar,
 };

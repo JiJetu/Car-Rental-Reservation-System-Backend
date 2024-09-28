@@ -5,6 +5,7 @@ export type TCar = {
   name: string;
   description: string;
   color: string;
+  type: string;
   isElectric: boolean;
   status: keyof typeof CarStatus;
   features: string[];

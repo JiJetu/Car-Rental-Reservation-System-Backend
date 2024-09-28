@@ -6,7 +6,8 @@ import { JwtPayload } from "jsonwebtoken";
 import { Booking } from "../booking/booking.model";
 import { User } from "../User/user.model";
 import mongoose from "mongoose";
-import { CarStatus } from "./car.constant";
+import { CarSearchableField, CarStatus } from "./car.constant";
+import QueryBuilder from "../../builder/QueryBuilder";
 
 const createCarIntoDB = async (payload: TCar) => {
   const result = await Car.create(payload);
@@ -14,10 +15,21 @@ const createCarIntoDB = async (payload: TCar) => {
   return result;
 };
 
-const getAllCarFromDB = async () => {
-  const result = await Car.find();
+const getAllCarFromDB = async (query: Record<string, unknown>) => {
+  const carQuery = new QueryBuilder(Car.find(), query)
+    .search(CarSearchableField)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
 
-  return result;
+  const result = await carQuery.modelQuery;
+  const meta = await carQuery.countTotal();
+
+  return {
+    meta,
+    result,
+  };
 };
 
 const getSingleCarFromDB = async (id: string) => {
@@ -52,7 +64,9 @@ const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
   try {
     session.startTransaction();
 
-    const booking = await Booking.findById(payload?.bookingId).populate('user').populate("car");
+    const booking = await Booking.findById(payload?.bookingId)
+      .populate("user")
+      .populate("car");
 
     if (!booking) {
       throw new AppError(httpStatus.NOT_FOUND, "Booking not found");
@@ -75,7 +89,11 @@ const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
     }
     const duration = endTimeInHours - startTimeInHours;
 
-    const car = await Car.findByIdAndUpdate(booking?.car, {status: CarStatus.available}, {new:true, session});
+    const car = await Car.findByIdAndUpdate(
+      booking?.car,
+      { status: CarStatus.available },
+      { new: true, session }
+    );
 
     if (!car) {
       throw new AppError(httpStatus.NOT_FOUND, "Car not found");
@@ -85,14 +103,13 @@ const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
 
     await booking.save({ session });
 
-
     await session.commitTransaction();
     await session.endSession();
 
     return booking;
   } catch (error) {
-    await session.abortTransaction()
-    await session.endSession()
+    await session.abortTransaction();
+    await session.endSession();
   }
 };
 
