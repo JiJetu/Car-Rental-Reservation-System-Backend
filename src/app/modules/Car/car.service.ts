@@ -8,6 +8,7 @@ import { User } from "../User/user.model";
 import mongoose from "mongoose";
 import { CarSearchableField, CarStatus } from "./car.constant";
 import QueryBuilder from "../../builder/QueryBuilder";
+import { UserRole } from "../User/user.constant";
 
 const createCarIntoDB = async (payload: TCar) => {
   const result = await Car.create(payload);
@@ -55,7 +56,7 @@ const updateCarIntoDB = async (id: string, payload: Partial<TCar>) => {
 const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
   const userExists = await User.findOne({ email: user.email });
 
-  if (!userExists) {
+  if (!userExists || userExists.role !== UserRole.admin) {
     throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized access");
   }
 
@@ -72,23 +73,25 @@ const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
       throw new AppError(httpStatus.NOT_FOUND, "Booking not found");
     }
 
-    const endTime = payload.endTime;
-    booking.endTime = endTime;
+    booking.endDate = payload.endDate;
+    booking.endTime = payload.endTime;
 
-    const [startHour, startMinute] = booking.startTime.split(":").map(Number);
-    const [endHour, endMinute] = endTime.split(":").map(Number);
+    // combine start date and time, and end date and time into Date objects
+    const startDateTime = new Date(`${booking.startDate}T${booking.startTime}`);
+    const endDateTime = new Date(`${payload.endDate}T${payload.endTime}`);
 
-    const startTimeInHours = startHour + startMinute / 60;
-    const endTimeInHours = endHour + endMinute / 60;
-
-    if (startTimeInHours > endTimeInHours) {
+    if (startDateTime >= endDateTime) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
-        "startTime is gater then end time"
+        "End date and time must be after start date and time"
       );
     }
-    const duration = endTimeInHours - startTimeInHours;
 
+    // calculate duration in hours
+    const durationInHours =
+      (endDateTime.getTime() - startDateTime.getTime()) / (1000 * 60 * 60);
+
+    // update car status as available
     const car = await Car.findByIdAndUpdate(
       booking?.car,
       { status: CarStatus.available },
@@ -99,7 +102,17 @@ const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
       throw new AppError(httpStatus.NOT_FOUND, "Car not found");
     }
 
-    booking.totalCost = duration * car.pricePerHour;
+    // Calculate additional feature cost at $20 per feature
+    const featureCost = booking.additionalFeatures.length * 20;
+    const insuranceCost = booking.additionalInsurance.length * 40;
+
+    const baseCost =
+      durationInHours * car.pricePerHour + featureCost + insuranceCost;
+
+    const taxAmount = baseCost * 0.1;
+
+    // Calculate total cost including tax
+    booking.totalCost = baseCost + taxAmount;
 
     await booking.save({ session });
 

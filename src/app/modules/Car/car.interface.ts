@@ -3,8 +3,11 @@ import { CarStatus } from "./car.constant";
 
 export type TCar = {
   name: string;
+  shortDescription: string;
   description: string;
   color: string;
+  location: string;
+  carImage: string;
   type: string;
   isElectric: boolean;
   status: keyof typeof CarStatus;
@@ -15,5 +18,6 @@ export type TCar = {
 
 export type TReturnCar = {
   bookingId: Types.ObjectId;
+  endDate: string;
   endTime: string;
 };

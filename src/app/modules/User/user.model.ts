@@ -29,6 +29,10 @@ const userSchema = new Schema<TUser, UserModel>(
       type: String,
       required: [true, "Phone number is required"],
     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
     address: {
       type: String,
       required: [true, "Address is required"],
@@ -40,7 +44,7 @@ const userSchema = new Schema<TUser, UserModel>(
 );
 
 userSchema.pre("save", async function (next) {
-  const user = this;
+  const user = this as any;
 
   user.password = await bcrypt.hash(user.password, Number(config.salt_round));
 
@@ -54,7 +58,7 @@ userSchema.post("save", function (doc, next) {
 });
 
 userSchema.statics.isUserExists = async function (email: string) {
-  const userExists = await User.findOne({email})
+  const userExists = await User.findOne({ email });
 
   return userExists;
 };

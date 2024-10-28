@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 // export type TUserRole = 'user' | 'admin';
 
 import { Model } from "mongoose";
 import { UserRole } from "./user.constant";
 
-export type TUserRole = keyof typeof UserRole
+export type TUserRole = keyof typeof UserRole;
 
 export type TUser = {
   name: string;
@@ -12,6 +13,7 @@ export type TUser = {
   password: string;
   phone: string;
   address: string;
+  isBlocked: boolean;
 };
 
 // for creating static

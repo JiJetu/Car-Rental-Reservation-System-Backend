@@ -10,4 +10,7 @@ export const CarSearchableField = [
   "pricePerHour",
   "features",
   "type",
+  "status",
+  "location",
+  "isDeleted",
 ];

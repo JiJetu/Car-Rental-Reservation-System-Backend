@@ -16,15 +16,23 @@ router.post(
 
 router.get("/", auth(UserRole.admin), BookingController.getAllBooking);
 
-router.get("/my-bookings", auth(UserRole.user), BookingController.userSingleBooking);
+router.get(
+  "/my-bookings",
+  auth(UserRole.user),
+  BookingController.userSingleBooking
+);
 
-// router.put(
-//   "/:carId",
-//   auth(UserRole.admin),
-//   validateRequest(CarValidations.updateCarValidationSchema),
-//   CarControllers.updateCar
-// );
+router.put(
+  "/approve/:bookingId",
+  auth(UserRole.admin),
+  validateRequest(BookingValidation.approveBookingSchema),
+  BookingController.approveBooking
+);
 
-// router.delete("/:carId", auth(UserRole.admin), CarControllers.deleteCar);
+router.delete(
+  "/cancel/:bookingId",
+  auth(UserRole.user),
+  BookingController.cancelBooking
+);
 
 export const BookingRoutes = router;

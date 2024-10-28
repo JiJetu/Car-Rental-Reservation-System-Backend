@@ -10,14 +10,29 @@ const carSchema = new Schema<TCar>(
       required: [true, "Name is required"],
       trim: true,
     },
+    shortDescription: {
+      type: String,
+      required: [true, "Short Description is required"],
+      trim: true,
+    },
     description: {
       type: String,
       required: [true, "Description is required"],
       trim: true,
     },
+    carImage: {
+      type: String,
+      required: [true, "carImage is required"],
+      trim: true,
+    },
     color: {
       type: String,
       required: [true, "Color is required"],
+      trim: true,
+    },
+    location: {
+      type: String,
+      required: [true, "Location is required"],
       trim: true,
     },
     type: {
