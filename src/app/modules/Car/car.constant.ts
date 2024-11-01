@@ -3,14 +3,4 @@ export const CarStatus = {
   unavailable: "unavailable",
 } as const;
 
-export const CarSearchableField = [
-  "name",
-  "color",
-  "isElectric",
-  "pricePerHour",
-  "features",
-  "type",
-  "status",
-  "location",
-  "isDeleted",
-];
+export const CarSearchableField = ["name", "description", "shortDescription"];

@@ -45,10 +45,10 @@ class QueryBuilder<T> {
     // Price Range Filter
     if (this.query.minPrice || this.query.maxPrice) {
       queryObj.pricePerHour = {};
-      if (this.query.minPrice) {
+      if (this.query.minPrice && !isNaN(Number(this.query.minPrice))) {
         queryObj.pricePerHour.$gte = Number(this.query.minPrice);
       }
-      if (this.query.maxPrice) {
+      if (this.query.maxPrice && !isNaN(Number(this.query.maxPrice))) {
         queryObj.pricePerHour.$lte = Number(this.query.maxPrice);
       }
     }
