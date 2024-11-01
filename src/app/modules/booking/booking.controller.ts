@@ -67,13 +67,27 @@ const userSingleBooking = catchAsync(async (req, res) => {
 const approveBooking = catchAsync(async (req, res) => {
   const { bookingId } = req.params;
 
-  const updatedBooking = await BookingService.approveBooking(bookingId);
+  const result = await BookingService.approveBooking(bookingId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Booking approved successfully",
-    data: updatedBooking,
+    data: result,
+  });
+});
+
+const paymentBooking = catchAsync(async (req, res) => {
+  const { bookingId } = req.params;
+  const user = req.user;
+
+  const result = await BookingService.paymentBooking(bookingId, user);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Payment paid successfully",
+    data: result,
   });
 });
 
@@ -81,13 +95,13 @@ const cancelBooking = catchAsync(async (req, res) => {
   const { bookingId } = req.params;
   const user = req.user;
 
-  const updatedBooking = await BookingService.cancelBooking(bookingId, user);
+  const result = await BookingService.cancelBooking(bookingId, user);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Booking canceled successfully",
-    data: updatedBooking,
+    data: result,
   });
 });
 
@@ -97,4 +111,5 @@ export const BookingController = {
   userSingleBooking,
   approveBooking,
   cancelBooking,
+  paymentBooking,
 };

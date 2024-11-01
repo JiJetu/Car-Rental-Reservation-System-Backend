@@ -29,6 +29,10 @@ const bookingSchema = new Schema<TBooking>(
       type: String,
       required: true,
     },
+    transactionId: {
+      type: String,
+      required: true,
+    },
     endDate: {
       type: String,
       default: null,
@@ -41,11 +45,19 @@ const bookingSchema = new Schema<TBooking>(
       type: Boolean,
       default: false,
     },
+    reviewStatus: {
+      type: Boolean,
+      default: false,
+    },
+    paymentStatus: {
+      type: Boolean,
+      default: false,
+    },
     totalCost: {
       type: Number,
       default: 0,
     },
-    canceledByUser: {
+    canceledBooking: {
       type: Boolean,
       default: false,
     },

@@ -9,8 +9,14 @@ const router = express.Router();
 
 router.get("/", auth(UserRole.admin), UserController.getAllUser);
 
+router.get(
+  "/my-info",
+  auth(UserRole.admin, UserRole.user),
+  UserController.getUser
+);
+
 router.put(
-  "/:carId",
+  "/:userId",
   auth(UserRole.admin, UserRole.user),
   validateRequest(UserValidations.updateUserValidationSchema),
   UserController.updateUser

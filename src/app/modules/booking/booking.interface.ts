@@ -9,8 +9,11 @@ export type TBooking = {
   endTime: string;
   additionalFeatures: string[];
   additionalInsurance: string[];
+  transactionId: string;
   bookingConfirm?: boolean;
-  canceledByUser?: boolean;
+  reviewStatus?: boolean;
+  canceledBooking?: boolean;
+  paymentStatus?: boolean;
   totalCost: number;
   createdAt?: Date;
   updatedAt?: Date;

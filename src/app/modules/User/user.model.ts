@@ -33,6 +33,11 @@ const userSchema = new Schema<TUser, UserModel>(
       type: Boolean,
       default: false,
     },
+    userImage: {
+      type: String,
+      default:
+        "https://i.ibb.co.com/6XKzKZ5/default-avatar-icon-of-social-media-user-vector.jpg",
+    },
     address: {
       type: String,
       required: [true, "Address is required"],

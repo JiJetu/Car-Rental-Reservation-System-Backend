@@ -103,11 +103,11 @@ const returnCardIntoDB = async (user: JwtPayload, payload: TReturnCar) => {
     }
 
     // Calculate additional feature cost at $20 per feature
-    const featureCost = booking.additionalFeatures.length * 20;
-    const insuranceCost = booking.additionalInsurance.length * 40;
+    const featureCost = (booking?.additionalFeatures.length * 20) | 0;
+    const insuranceCost = (booking?.additionalInsurance.length * 40) | 0;
 
     const baseCost =
-      durationInHours * car.pricePerHour + featureCost + insuranceCost;
+      durationInHours * car?.pricePerHour + featureCost + insuranceCost;
 
     const taxAmount = baseCost * 0.1;
 

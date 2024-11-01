@@ -15,12 +15,24 @@ const getAllUserFromDB = async (query: Record<string, unknown>) => {
     .fields();
 
   const result = await userQuery.modelQuery;
-  // const meta = await carQuery.countTotal();
+  const meta = await userQuery.countTotal();
 
   return {
-    //   meta,
+    meta,
     result,
   };
+};
+
+const getUserIntoDB = async (currentUser: JwtPayload) => {
+  const userExists = (await User.findOne({
+    email: currentUser?.email,
+  })) as TUser;
+
+  if (!userExists) {
+    throw new AppError(httpStatus.NOT_FOUND, "User is not found!!");
+  }
+
+  return userExists;
 };
 
 const updateUserIntoDB = async (
@@ -78,6 +90,19 @@ const updateUserIntoDB = async (
     delete payload.isBlocked;
   }
 
+  if (!payload.userImage) {
+    payload.userImage = userExits.userImage;
+  }
+  if (!payload.name) {
+    payload.name = userExits.name;
+  }
+  if (!payload.email) {
+    payload.email = userExits.email;
+  }
+  if (!payload.address) {
+    payload.address = userExits.address;
+  }
+
   // Update user information directly in the database
   const result = await User.findByIdAndUpdate(id, payload, {
     new: true,
@@ -88,5 +113,6 @@ const updateUserIntoDB = async (
 
 export const UserService = {
   getAllUserFromDB,
+  getUserIntoDB,
   updateUserIntoDB,
 };

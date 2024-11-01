@@ -13,7 +13,8 @@ const getAllUser = catchAsync(async (req, res) => {
       statusCode: httpStatus.NOT_FOUND,
       success: false,
       message: "No Data Found",
-      data: result,
+      meta: result.meta,
+      data: result.result,
     });
   }
 
@@ -21,14 +22,27 @@ const getAllUser = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Users retrieved successfully",
+    meta: result.meta,
+    data: result.result,
+  });
+});
+
+const getUser = catchAsync(async (req, res) => {
+  const user = req.user;
+  const result = await UserService.getUserIntoDB(user);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User updated successfully",
     data: result,
   });
 });
 
 const updateUser = catchAsync(async (req, res) => {
-  const { carId } = req.params;
+  const { userId } = req.params;
   const user = req.user;
-  const result = await UserService.updateUserIntoDB(carId, req.body, user);
+  const result = await UserService.updateUserIntoDB(userId, req.body, user);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -40,5 +54,6 @@ const updateUser = catchAsync(async (req, res) => {
 
 export const UserController = {
   getAllUser,
+  getUser,
   updateUser,
 };

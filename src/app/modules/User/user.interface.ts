@@ -11,6 +11,7 @@ export type TUser = {
   email: string;
   role: TUserRole;
   password: string;
+  userImage: string;
   phone: string;
   address: string;
   isBlocked: boolean;

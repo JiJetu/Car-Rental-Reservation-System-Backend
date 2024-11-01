@@ -29,9 +29,15 @@ router.put(
   BookingController.approveBooking
 );
 
+router.put(
+  "/payment/:bookingId",
+  auth(UserRole.user),
+  BookingController.paymentBooking
+);
+
 router.delete(
   "/cancel/:bookingId",
-  auth(UserRole.user),
+  auth(UserRole.admin, UserRole.user),
   BookingController.cancelBooking
 );
 

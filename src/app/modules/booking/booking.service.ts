@@ -6,6 +6,9 @@ import { Car } from "../Car/car.model";
 import { JwtPayload } from "jsonwebtoken";
 import { User } from "../User/user.model";
 import { CarStatus } from "../Car/car.constant";
+import { UserRole } from "../User/user.constant";
+import { initiatePayment } from "../payment/payment.utils";
+import crypto from "crypto";
 
 const createBookingIntoDB = async (
   carId: string,
@@ -25,10 +28,20 @@ const createBookingIntoDB = async (
 
   // check user is exists
   const userExists = await User.findOne({ email: user?.email });
+
   if (!userExists) {
     throw new AppError(httpStatus.NOT_FOUND, "User is not found!!");
   }
 
+  // set transactionId
+
+  const hash = crypto
+    .createHash("sha256")
+    .update(userExists.email + Date.now().toString())
+    .digest("hex")
+    .slice(0, 10);
+
+  payload.transactionId = `tex-${hash}`;
   payload.car = carExists._id;
   payload.user = userExists._id;
 
@@ -40,13 +53,19 @@ const createBookingIntoDB = async (
 };
 
 const getAllBookingFromDB = async (query: Record<string, unknown>) => {
-  const { carId, date } = query;
+  const { carId, date, bookingConfirm, canceledBooking } = query;
   const queryObj: any = {};
   if (carId) {
     queryObj.car = carId;
   }
   if (date) {
-    queryObj.date = date;
+    queryObj.startDate = date;
+  }
+  if (bookingConfirm) {
+    queryObj.bookingConfirm = bookingConfirm;
+  }
+  if (canceledBooking) {
+    queryObj.canceledBooking = canceledBooking;
   }
   const result = await Booking.find(queryObj).populate("user").populate("car");
 
@@ -77,6 +96,10 @@ const approveBooking = async (bookingId: string) => {
     throw new AppError(httpStatus.BAD_REQUEST, "Booking already approved");
   }
 
+  if (booking.canceledBooking) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Booking already canceled");
+  }
+
   const updatedBooking = await Booking.findByIdAndUpdate(
     bookingId,
     { bookingConfirm: true },
@@ -86,6 +109,52 @@ const approveBooking = async (bookingId: string) => {
     .populate("car");
 
   return updatedBooking;
+};
+
+const paymentBooking = async (bookingId: string, user: JwtPayload) => {
+  const booking = await Booking.findById(bookingId);
+
+  if (!booking) {
+    throw new AppError(httpStatus.NOT_FOUND, "Booking not found");
+  }
+
+  const userExists = await User.findOne({ email: user?.email });
+
+  if (!userExists || userExists.role === UserRole.admin) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized access");
+  }
+
+  if (!booking.user.equals(userExists._id) || !booking.totalCost) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You are not authorized to pay the  cost"
+    );
+  }
+
+  if (booking.paymentStatus) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Payment already paid!");
+  }
+
+  // // todo: change as true
+  // booking.paymentStatus = false;
+  // await booking.save();
+
+  // // // update payment status as true
+  // // await Booking.findById(bookingId).populate("user").populate("car");
+
+  // payment
+  const paymentInfo = {
+    transactionId: booking.transactionId,
+    totalCost: booking.totalCost,
+    userName: userExists.name,
+    userEmail: userExists.email,
+    userAddress: userExists.address,
+    userPhone: userExists.phone,
+  };
+
+  const paymentSession = await initiatePayment(paymentInfo);
+
+  return paymentSession;
 };
 
 const cancelBooking = async (bookingId: string, user: JwtPayload) => {
@@ -101,12 +170,18 @@ const cancelBooking = async (bookingId: string, user: JwtPayload) => {
     throw new AppError(httpStatus.NOT_FOUND, "User is not found!!");
   }
 
-  if (!booking.user.equals(userExists._id)) {
+  if (
+    !booking.user.equals(userExists._id) &&
+    userExists.role !== UserRole.admin
+  ) {
     throw new AppError(
       httpStatus.FORBIDDEN,
       "You are not authorized to cancel this booking"
     );
   }
+  // if (!userExists || userExists.role !== UserRole.admin) {
+  //   throw new AppError(httpStatus.UNAUTHORIZED, "Unauthorized access");
+  // }
 
   if (booking.bookingConfirm) {
     throw new AppError(
@@ -123,11 +198,13 @@ const cancelBooking = async (bookingId: string, user: JwtPayload) => {
   const hoursSinceBooking =
     (Date.now() - new Date(booking.createdAt).getTime()) / (1000 * 60 * 60);
 
-  if (hoursSinceBooking > 24) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Cancellation is only allowed within 24 hours of bookings"
-    );
+  if (UserRole.user && booking.user.equals(userExists._id)) {
+    if (hoursSinceBooking > 24) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        "Cancellation is only allowed within 24 hours of bookings"
+      );
+    }
   }
 
   // update car status as available
@@ -143,7 +220,7 @@ const cancelBooking = async (bookingId: string, user: JwtPayload) => {
 
   const updatedBooking = await Booking.findByIdAndUpdate(
     bookingId,
-    { canceledByUser: true },
+    { canceledBooking: true },
     { new: true }
   )
     .populate("user")
@@ -185,4 +262,5 @@ export const BookingService = {
   userSingleBookingFromDB,
   approveBooking,
   cancelBooking,
+  paymentBooking,
 };
