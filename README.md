@@ -195,7 +195,7 @@ Car-Rental-Reservation-System-Backend/
     npm run start:prod
    ```
 
-4. y default, the server will run on `http://localhost:5000.` You can modify the `PORT` variable in your `.env` file if needed.
+4. By default, the server will run on `http://localhost:5000.` You can modify the `PORT` variable in your `.env` file if needed.
 
 # Car Rental Reservation System API Documentation
 
