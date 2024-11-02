@@ -29,12 +29,28 @@ const createReviewIntoDB = async (
     throw new AppError(httpStatus.NOT_FOUND, "User is not found!!");
   }
 
+  const car = await Car.findById(booking.car);
+
+  if (!car) {
+    throw new AppError(httpStatus.NOT_FOUND, "Car is not found!!");
+  }
+
   if (!booking.user.equals(userExists._id)) {
     throw new AppError(
       httpStatus.FORBIDDEN,
       "You are not authorized to write review"
     );
   }
+
+  car.ratingCount += 1;
+  const userRatting = payload?.rating || 5;
+  car.ratingSum += userRatting;
+
+  // Calculate new average rating
+  car.averageRating = Math.round(car.ratingSum / car.ratingCount);
+
+  // Save the car with the updated rating information
+  await car.save();
 
   payload.user = userExists._id;
   payload.car = booking.car;

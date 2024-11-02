@@ -1,3 +1,4 @@
+import path from "path";
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import globalErrorhandler from "./app/middlewares/globalErrorhandler";
@@ -15,6 +16,7 @@ app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
 // calling all routes
 app.use("/api", router);
 
+app.use(express.static(path.join(__dirname, "public")));
 //  testing route
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");

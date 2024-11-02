@@ -7,6 +7,10 @@ const bookingSchema = new Schema<TBooking>(
       type: String,
       required: true,
     },
+    expectedEndDate: {
+      type: String,
+      required: true,
+    },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -40,6 +44,10 @@ const bookingSchema = new Schema<TBooking>(
     endTime: {
       type: String,
       default: null,
+    },
+    expectedEndTime: {
+      type: String,
+      required: true,
     },
     bookingConfirm: {
       type: Boolean,

@@ -6,6 +6,9 @@ export type TCar = {
   shortDescription: string;
   description: string;
   color: string;
+  ratingCount: number;
+  averageRating: number;
+  ratingSum: number;
   location: string;
   carImage: string;
   type: string;

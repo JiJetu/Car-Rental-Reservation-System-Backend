@@ -24,7 +24,7 @@ const loginUser = catchAsync(async (req, res) => {
 
   res.cookie("refreshToken", refreshToken, {
     secure: config.NODE_ENV === "production",
-    httpOnly: true
+    httpOnly: true,
   });
 
   sendResponse(res, {
@@ -44,7 +44,33 @@ const refreshToken = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Access token is retrieved succesfully!',
+    message: "Access token is retrieved succesfully!",
+    data: result,
+  });
+});
+
+const forgetPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  const result = await AuthServices.forgetPassword(email);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Reset link generated successfully!",
+    data: result,
+  });
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+  const token = req.headers.authorization;
+
+  const result = await AuthServices.resetPassword(req.body, token as string);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password reset successfully!",
     data: result,
   });
 });
@@ -52,5 +78,7 @@ const refreshToken = catchAsync(async (req, res) => {
 export const AuthController = {
   loginUser,
   registerUser,
-  refreshToken
+  refreshToken,
+  forgetPassword,
+  resetPassword,
 };

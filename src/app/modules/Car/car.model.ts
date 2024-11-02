@@ -61,6 +61,15 @@ const carSchema = new Schema<TCar>(
       type: Boolean,
       default: false,
     },
+    ratingCount: {
+      type: Number,
+      default: 1,
+    },
+    averageRating: {
+      type: Number,
+      default: 5,
+    },
+    ratingSum: { type: Number, default: 5 },
   },
   {
     timestamps: true,
