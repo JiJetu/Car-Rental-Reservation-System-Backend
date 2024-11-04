@@ -18,9 +18,12 @@ export const initiatePayment = async (paymentInfo: TPaymentInfoProps) => {
       store_id: config.store_id,
       signature_key: config.signature_key,
       tran_id: paymentInfo.transactionId,
-      success_url: `https://car-rental-reservation-system-backend-red.vercel.app/api/payments/conformation?transactionId=${paymentInfo.transactionId}&status=success`,
-      fail_url: `https://car-rental-reservation-system-backend-red.vercel.app/api/payments/conformation?status=faild`,
-      cancel_url: "http://localhost:5173/user/booking-history",
+      success_url: `${config.payment_backend_url}/api/payments/conformation?transactionId=${paymentInfo.transactionId}&status=success`,
+      fail_url: `${config.payment_backend_url}/api/payments/conformation?status=faild`,
+      cancel_url:
+        "https://car-rental-reservation-system-client-six.vercel.app/user/booking-history",
+
+      // cancel_url: "http://localhost:5173/user/booking-history",
       amount: paymentInfo.totalCost,
       currency: "BDT",
       desc: "Merchant Registration Payment",
