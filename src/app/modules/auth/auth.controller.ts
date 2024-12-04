@@ -12,7 +12,7 @@ const registerUser = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: "User logged in successfully",
+    message: "User register in successfully",
     data: remainingUserData,
   });
 });

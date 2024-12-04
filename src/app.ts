@@ -24,7 +24,9 @@ app.use(
 // calling all routes
 app.use("/api", router);
 
+// joining public file
 app.use(express.static(path.join(__dirname, "../public")));
+
 //  testing route
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
